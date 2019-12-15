@@ -1,0 +1,21 @@
+[Desktop Entry]
+Categories=GNOME;Utility;
+Comment[pt_BR]=Cakes don't lie.
+Comment=Cakes don't lie.
+Exec=gnome-pie
+GenericName[pt_BR]=
+GenericName=
+Icon=gnome-pie
+Keywords=Utility;Menu;
+MimeType=
+Name[pt_BR]=Gnome-Pie
+Name=Gnome-Pie
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-DBUS-ServiceName=
+X-DBUS-StartupType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=

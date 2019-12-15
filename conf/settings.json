@@ -1,0 +1,9 @@
+{
+    // Desabilitar miniMap no canto
+    "editor.minimap.enabled": false,
+    
+    // Organizar imports automaticamente
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    }
+}

@@ -16,8 +16,8 @@ readonly gray=$(tput setaf 250)
 readonly data=$(date '+%a %d/%b/%Y às %H:%M')
 
 WORK_DESENVOLVIMENTO_FERRAMENTAS="/work/desenvolvimento/ferramentas"
-JAVA_HOME_WORK=
-MAVEN_HOME_WORK=
+JAVA_HOME_WORK="/work/desenvolvimento/ambiente/jdk/jdk1.8.0_231"
+MAVEN_HOME_WORK="/work/desenvolvimento/ambiente/maven/apache-maven-3.6.3"
 DIR_WALLPAPER="/usr/share/wallpapers/${USER}Collection"
 NOME_ESTACAO=$(hostname -f)
 NOME_USUARIO=$(whoami)
@@ -142,11 +142,11 @@ menu(){
     
     case $opcaoMenu in
         q) exit 0 ;;
-        1) configuraRepositorios ;;
-        2) atualizaDistribuicao ;;
+        1) atualizaDistribuicao ;;
+        2) instalacaoPacotesExtras ;;
         3) mapeamentoDiretorioHomeParaWork ;;
-        4) configuracaoAmbienteTrabalho ;;
-        5) instalacaoPacotesExtras ;;
+        4) configuraRepositorios ;;
+        5) configuracaoAmbienteTrabalho ;;
         6) tunningSistemaEClean ;;
         *) tput setaf 9 && echo "Opção ${opcaoMenu} inválida!"&& tput sgr0 && read _ && menu ;;
     esac
@@ -155,9 +155,9 @@ menu(){
 
 executaCompleto(){
     atualizaDistribuicao
+    instalacaoPacotesExtras     
     mapeamentoDiretorioHomeParaWork
     configuraRepositorios
-    instalacaoPacotesExtras     
     configuracaoAmbienteTrabalho
     tunningSistemaEClean
     
@@ -173,7 +173,7 @@ executaCompleto(){
 
 configuraRepositorios(){
 
-    # Configuração dos repositórios internos da Fóton e de terceiros.
+    # Configuração dos repositórios internos e de terceiros.
     cabecalho
 
     tput setaf 114
@@ -193,34 +193,33 @@ configuraRepositorios(){
                 apt-transport-https \
                 ca-certificates \
                 curl \
+                gnupg-agent \
                 software-properties-common -y
-        sudo dpkg --add-architecture i386
-        wget -qO - https://dl.winehq.org/wine-builds/winehq.key | sudo apt-key add -
+        
         sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         sudo apt-key fingerprint 0EBFCD88
         sudo add-apt-repository \
                 "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-                $(lsb_release -cs) \
+                disco \
                 stable"
-                
+        # $(lsb_release -cs) \
+        
         sudo add-apt-repository ppa:papirus/papirus -y
-        sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main' -y
+        
+        #sudo dpkg --add-architecture i386
+        #wget -qO - https://dl.winehq.org/wine-builds/winehq.key | sudo apt-key add -
+        #sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main' -y
 
-        tput setaf 2
-        echo 'Passo executado...pressione qualquer tecla para continuar ou CTRL-c para sair.'
-        tput sgr0
-        read
+        menuOuSair
 
     elif [ "$RESPOSTA" = "N" ] || [ "$RESPOSTA" = "n" ]; then
-            
-        tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _
+        menuOuSair
 
     else
-        tput setaf 1 && echo 'Você digitou uma opção inválida. Pressione [ENTER] para continuar a execução do próximo passo do script.' && tput sgr0 && read _
+        opcaoInvalida
     fi
 
 }
-
 
 atualizaDistribuicao(){
 
@@ -242,17 +241,13 @@ atualizaDistribuicao(){
         sudo apt update -y
         sudo apt full-upgrade -y
 
-        tput setaf 2
-        echo 'Passo executado...pressione qualquer tecla para continuar ou CTRL-c para sair.'
-        tput sgr0
-        read
+        menuOuSair
         
     elif [ "$RESPOSTA" = "N" ] || [ "$RESPOSTA" = "n" ]; then
-            
-        tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _
+        menuOuSair
 
     else
-        tput setaf 1 && echo 'Você digitou uma opção inválida. Pressione [ENTER] para continuar a execução do próximo passo do script.' && tput sgr0 && read _
+        opcaoInvalida
     fi
 
 }
@@ -275,29 +270,25 @@ mapeamentoDiretorioHomeParaWork(){
 
         if [ -d /work ]; then
             
-            chown -R $USER:$USER /work
+            sudo chown -R $USER:$USER /work
         
-            rm -rf  ~/Área\ de\ Trabalho \
+            rm -rfv  ~/Área\ de\ Trabalho \
                     ~/Documentos \
                     ~/Downloads \
                     ~/Imagens \
                     ~/Modelos \
                     ~/Música \
                     ~/Público \
-                    ~/Vídeos \
-                    ~/Projetos
+                    ~/Vídeos
 
-            mkdir -p	/work/área\ de\ trabalho \
+            mkdir -pv	/work/área\ de\ trabalho \
                         /work/documentos \
                         /work/downloads \
                         /work/imagens \
                         /work/músicas \
                         /work/público \
                         /work/vídeos \
-                        /work/projetos \
                         /work/desenvolvimento \
-                        /work/programas \
-                        /work/.mozilla \
                         /work/.themes \
                         /work/.icons
                         
@@ -320,21 +311,17 @@ mapeamentoDiretorioHomeParaWork(){
             if [ ! -d ~/Música ]; then
                 ln -s /work/músicas ~/Música
             fi
+
+            if [ ! -d ~/Vídeos ]; then
+                ln -s /work/vídeos ~/Vídeos
+            fi
             
             if [ ! -d ~/Público ]; then
                 ln -s /work/público ~/Público
             fi
             
-            if [ ! -d ~/Projetos ]; then
-                ln -s /work/projetos ~/Projetos
-            fi
-            
             if [ ! -d ~/Desenvolvimento ]; then
                 ln -s /work/desenvolvimento ~/Desenvolvimento
-            fi
-            
-            if [ ! -d ~/.mozilla ]; then
-                ln -s /work/.mozilla ~/.mozilla
             fi
             
             if [ ! -d ~/.icons ]; then
@@ -344,31 +331,24 @@ mapeamentoDiretorioHomeParaWork(){
             if [ ! -d ~/.themes ]; then
                 ln -s /work/.themes ~/.themes
             fi        
-            
-            tput setaf 2
-            echo 'Passo executado...pressione qualquer tecla para continuar ou CTRL-c para sair.'
-            tput sgr0
-            read
-            
         else
-            tput setaf 1 && echo 'Diretório /work não existe. Fim da execução do script.' && tput sgr0 && exit 1
+            tput setaf 1 && echo 'Diretório /work não existe. Fim da execução do script.'
         fi
 
+        menuOuSair
 
     elif [ "$RESPOSTA" = "N" ] || [ "$RESPOSTA" = "n" ]; then
-            
-        tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _
+        menuOuSair
 
     else
-        tput setaf 1 && echo 'Você digitou uma opção inválida. Pressione [ENTER] para continuar a execução do próximo passo do script.' && tput sgr0 && read _
+        opcaoInvalida
     fi
 }
 
 
-
 configuracaoAmbienteTrabalho(){
 
-# Configuração do ambiente de desenvolvimento (Utilizando a partição /work).
+    # Configuração do ambiente de desenvolvimento (Utilizando a partição /work).
     cabecalho
 
     tput setaf 114
@@ -389,30 +369,85 @@ configuracaoAmbienteTrabalho(){
 
     if [ "$RESPOSTA" = "S" ] || [ "$RESPOSTA" = "s" ]; then
 
-        instalaJDK 
+        instalaJDK
 
         install_maven 
         
-        source /etc/profile
-        
     elif [ "$RESPOSTA" = "N" ] || [ "$RESPOSTA" = "n" ]; then
-            
+        
         tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _
 
     else
-        tput setaf 1 && echo 'Você digitou uma opção inválida. Pressione [ENTER] para continuar a execução do próximo passo do script.' && tput sgr0 && read _
+        opcaoInvalida
     fi
 
-    sudo apt install docker-ce docker-ce-cli containerd.io -y
-    sudo apt-get install --install-recommends winehq-stable
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    docker --version
-    sudo gpasswd -a ${USER} docker
-    sudo groupadd -f docker 
-    sudo usermod -aG docker $USER
+    sudo apt install google-chrome-stable gnome-pie yakuake code -y
+    cp ./autostart/* ~/.config/autostart
+    cp ./conf/pies.conf ~/.config/gnome-pie
+    cp ./conf/yakuakerc ~/.config/yakuakerc
+    cp ./conf/settings.json  ~/.config/Code/User
     
-    #continuando configuracao ambiente de trabalho.
+    instalaDocker
+    
+    configuraCorporativo
+    
+    menuOuSair
+
+}
+
+instalacaoPacotesExtras(){
+    # Instalação de pacotes restritos (flash, codecs, zips, etc).
+    cabecalho
+
+    tput setaf 114
+    echo ''
+    echo "-- Instalação de pacotes extras e restritos"
+    echo ''
+    tput sgr0
+
+    sudo apt install bash-completion curl libavcodec-extra libdvd-pkg kubuntu-restricted-extras kubuntu-restricted-addons ssh rar unrar p7zip-rar p7zip-full gtk2-engines-murrine gtk2-engines-pixbuf 
+    gtk3-engines-unico apt-xapian-index smb4k firefox-locale-br gtk3-engines-breeze papirus-icon-theme libreoffice libreoffice-style-papirus filezilla filezilla-theme-papirus 
+    libreoffice-help-pt-br libreoffice-l10n-pt-br hunspell-pt-br  hunspell-pt-pt  libreoffice-style-* libreoffice-gtk3  build-essential git kate kubuntu-driver-manager kcalc
+
+    sudo apt install --install-recommends arc-kde adapta-kde materia-kde -y
+    
+    tput setaf 7 && echo 'Deseja baixar wallpapers customizados? Lembrando que irá consumir banda de internet em modo corporativo (S/N ou s/n)' && tput setaf 2
+    read RESPOSTA
+    tput sgr0
+
+    if [ "$RESPOSTA" = "S" ] || [ "$RESPOSTA" = "s" ]; then       
+        sudo git clone https://gist.github.com/85942af486eb79118467.git ${DIR_WALLPAPER}_1        
+        sudo git clone https://github.com/LukeSmithxyz/wallpapers.git ${DIR_WALLPAPER}_2
+    fi
+
+    menuOuSair
+}
+
+tunningSistemaEClean(){
+
+
+    # Remove programas supérfulos e tunning do sistema.
+    cabecalho
+
+    tput setaf 114
+    echo ''
+    echo "-- Remove programas supérfulos e tunning do sistema."
+    echo '    '
+    tput sgr0
+
+    #Melhorias de performace
+    echo "vm.swappiness=1" | sudo tee --append /etc/sysctl.conf > /dev/null 
+    echo "vm.vfs_cache_pressure=50" | sudo tee --append /etc/sysctl.conf > /dev/null 
+    echo "vm.dirty_background_bytes=16777216" | sudo tee --append /etc/sysctl.conf > /dev/null 
+    echo "vm.dirty_bytes=50331648" | sudo tee --append /etc/sysctl.conf > /dev/null 
+    
+    sudo apt remove apport kwrite k3b -y
+    sudo apt auto-remove -y
+
+}
+
+function configuraCorporativo() {
+
     if [[ $ehCorporativo = S ]] ; then
         cabecalho
 
@@ -453,84 +488,20 @@ configuracaoAmbienteTrabalho(){
             echo 'Acquire::http::Proxy "http://$PROXY_USUARIO:$PROXY_SENHA@$PROXY_HOST:$PROXY_PORTA";' | sudo tee --append /etc/apt/apt.conf > /dev/null
             echo 'Acquire::https::Proxy "https://$PROXY_USUARIO:$PROXY_SENHA@$PROXY_HOST:$PROXY_PORTA";' | sudo tee --append /etc/apt/apt.conf > /dev/null
             
-            echo '# Proxy' | sudo tee --append /etc/environment > /dev/null
-            echo 'no_proxy="localhost"' | sudo tee --append /etc/environment > /dev/null
+            echo '# Proxy' | sudo tee --append ~/.bashrc > /dev/null
+            echo 'no_proxy="localhost"' | sudo tee --append ~/.bashrc > /dev/null
             
             tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _        
 
         elif [ "$RESPOSTA" = "N" ] || [ "$RESPOSTA" = "n" ]; then
             sudo rm -rf /etc/apt/apt.conf
-            tput setaf 2 && echo 'Pressione [ENTER] para continuar.' && tput sgr0 && read _
+            menuOuSair
 
         else
-            tput setaf 1 && echo 'Você digitou uma opção inválida. Fim da execução do script.' && tput sgr0
+            opcaoInvalida
         fi
 
     fi
-    
-    tput setaf 2
-    echo 'Passo executado...pressione qualquer tecla para continuar ou CTRL-c para sair.'
-    tput sgr0
-    read
-
-}
-
-instalacaoPacotesExtras(){
-    # Instalação de pacotes restritos (flash, codecs, zips, etc).
-    cabecalho
-
-    tput setaf 114
-    echo ''
-    echo "-- Instalação de pacotes extras e restritos"
-    echo ''
-    tput sgr0
-
-    sudo apt install bash-completion curl libavcodec-extra libdvd-pkg kubuntu-restricted-extras kubuntu-restricted-addons ssh rar unrar p7zip-rar p7zip-full gtk2-engines-murrine gtk2-engines-pixbuf gtk3-engines-unico yakuake apt-xapian-index smb4k kde-l10n-ptbr firefox-locale-br gtk3-engines-breeze papirus-icon-theme libreoffice libreoffice-style-papirus filezilla filezilla-theme-papirus libreoffice-help-pt-br libreoffice-l10n-pt-br hunspell-pt-br  hunspell-pt-pt  libreoffice-style-* libreoffice-gtk3  build-essential git partitionmanager kate kubuntu-driver-manager partitionmanager kcalc docker-ce docker-ce-cli containerd.io -y
-
-    sudo apt install --install-recommends arc-kde adapta-kde materia-kde -y
-    
-    tput setaf 7 && echo 'Deseja baixar wallpapers customizados? Lembrando que irá consumir banda de internet em modo corporativo (S/N ou s/n)' && tput setaf 2
-    read RESPOSTA
-    tput sgr0
-
-    if [ "$RESPOSTA" = "S" ] || [ "$RESPOSTA" = "s" ]; then       
-        sudo git clone https://gist.github.com/85942af486eb79118467.git ${DIR_WALLPAPER}_1        
-        sudo git clone https://github.com/LukeSmithxyz/wallpapers.git ${DIR_WALLPAPER}_2
-        #sudo git clone https://github.com/kotajacob/wallpapers.git ${DIR_WALLPAPER}_3
-        #sudo git clone https://github.com/himynameisxtd/wallpapers.git ${DIR_WALLPAPER}_4
-    fi
-
-    tput setaf 2
-    echo 'Passo executado...pressione qualquer tecla para continuar ou CTRL-c para sair.'
-    tput sgr0
-    read
-
-
-}
-
-
-
-tunningSistemaEClean(){
-
-
-    # Remove programas supérfulos e tunning do sistema.
-    cabecalho
-
-    tput setaf 114
-    echo ''
-    echo "-- Remove programas supérfulos e tunning do sistema."
-    echo '    '
-    tput sgr0
-
-    #Melhorias de performace
-    echo "vm.swappiness=1" | sudo tee --append /etc/sysctl.conf > /dev/null 
-    echo "vm.vfs_cache_pressure=50" | sudo tee --append /etc/sysctl.conf > /dev/null 
-    echo "vm.dirty_background_bytes=16777216" | sudo tee --append /etc/sysctl.conf > /dev/null 
-    echo "vm.dirty_bytes=50331648" | sudo tee --append /etc/sysctl.conf > /dev/null 
-    
-    sudo apt remove apport kwrite k3b -y
-    sudo apt auto-remove -y
-
 }
 
 instalaJDK(){
@@ -542,56 +513,69 @@ instalaJDK(){
     fi
         
     info "Instalando a JDK em $caminhoJDK"
-    
-    sudo ln -sf "$caminhoJDK" "/usr/lib/jvm/$2"
-    
-    if [ "$3" = "S" ] || [ "$3" = "s" ]; then 
-        if grep -Fxq "JAVA_HOME=" /etc/profile
-        then
-            info "Variável JAVA_HOME já configurada!"
-        else
-            echo "" | sudo tee --append /etc/profile > /dev/null  
-            echo "# Variaveis de ambiente para desenvolvimento" | sudo tee --append /etc/profile > /dev/null  
-            echo "JAVA_HOME=\"$caminhoJDK\"" | sudo tee --append /etc/profile > /dev/null  
-            echo "PATH=\"\$PATH:\$JAVA_HOME/bin\"" | sudo tee --append /etc/profile > /dev/null  
-        fi
+   
+    if grep -Fq "JAVA_HOME="  ~/.bashrc 
+        then 
+        info "JDK já instalado!"
+        java -version | grep "java"
+    else
+        echo "" | sudo tee --append ~/.bashrc > /dev/null  
+        echo "# Variaveis de ambiente JDK:" | sudo tee --append ~/.bashrc 
+        echo "export JAVA_HOME=\"$caminhoJDK\"" | sudo tee --append ~/.bashrc
+        echo "export PATH=\$JAVA_HOME/bin:\$PATH" | sudo tee --append ~/.bashrc
+        source ~/.bashrc
     fi
-    
-    sudo update-alternatives --install /usr/bin/java java ${caminhoJDK}/bin/java 0;
-    sudo update-alternatives --install /usr/bin/javac javac ${caminhoJDK}/bin/javac 0;
-    sudo update-alternatives --install /usr/bin/javadoc javadoc ${caminhoJDK}/bin/javadoc 0;
-    sudo update-alternatives --install /usr/bin/javaws javaws ${caminhoJDK}/bin/javaws 0;
-    
-    sudo apt install openjdk-8-jdk openjdk-11-jdk
-    
 }
 
 install_maven() {
 
-    if hash mvn 2>/dev/null; 
-        then
-        echo "Maven já instalado."
-        mvn --version | grep "Apache Maven"
-    else
-    
-        local caminhoMaven=$MAVEN_HOME_WORK    
-        
-        if [ -d "$caminhoMaven" ]; then            
-            echo "M2_HOME=\"$caminhoMaven\"" | sudo tee --append /etc/profile > /dev/null  
-            echo "MAVEN_HOME=\"$caminhoMaven\"" | sudo tee --append /etc/profile > /dev/null
-            echo "M2=\"\$M2_HOME/bin\"" | sudo tee --append /etc/profile > /dev/null 
-            echo "MAVEN_OPTS=\"Xms256m -Xmx512m\"" | sudo tee --append /etc/profile > /dev/null 
-            echo "PATH=\"\$M2:\$PATH\"" | sudo tee --append /etc/profile > /dev/null         
-            source /etc/profile
-        fi        
+    local caminhoMaven=$MAVEN_HOME_WORK   
 
-        sudo wget https://raw.github.com/dimaj/maven-bash-completion/master/bash_completion.bash --output-document /etc/bash_completion.d/mvn    
+    if [ ! -d "$caminhoMaven" ]; then    
+        info "Caminho do Maven não foi informado, pulando passo!"
+        return
     fi
     
+    info "Instalando Maven em $caminhoMaven"
+     
+    if grep -Fq "M2_HOME="  ~/.bashrc
+        then
+        info "Maven já instalado!"
+        mvn --version | grep "Apache Maven"
+    else 
+        echo "# Variaveis de ambiente Maven:" | sudo tee --append ~/.bashrc      
+        echo "export M2_HOME=\"$caminhoMaven\"" | sudo tee --append ~/.bashrc
+        echo "export PATH=\$M2_HOME/bin:\$PATH" | sudo tee --append ~/.bashrc       
+        source ~/.bashrc
+    fi        
 } 
+
+function instalaDocker() {
+    sudo apt-get remove docker docker-engine docker.io containerd runc docker-compose
+    sudo apt install docker-ce docker-ce-cli containerd.io docker-compose -y
+    
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    docker --version
+    
+    sudo groupadd -f docker  # cria grupo
+    sudo gpasswd -a ${USER} docker # adiciona usuário ao grupo
+    sudo usermod -aG docker $USER # adiciona usuário ao grupo
+}
 
 function info(){        
     echo -e "\e[36m[INFO] $1\e[0m"
+}
+
+function menuOuSair() {
+    tput setaf 2
+    echo '...Pressione qualquer tecla para continuar ou CTRL-c para sair.'
+    tput sgr0 && read _ && menu
+}
+
+function opcaoInvalida() {
+    tput setaf 1 && echo 'Você digitou uma opção inválida.'
+    menuOuSair
 }
 
 finaliza(){
