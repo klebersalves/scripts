@@ -261,6 +261,7 @@ function mapeamentoDiretorioHomeParaWork(){
                         /work/público \
                         /work/vídeos \
                         /work/desenvolvimento \
+                        /work/.m2
                         
             if [ ! -d ~/Área\ de\ Trabalho ]; then
                 ln -s /work/área\ de\ trabalho ~/Área\ de\ Trabalho
@@ -292,6 +293,10 @@ function mapeamentoDiretorioHomeParaWork(){
             
             if [ ! -d ~/Desenvolvimento ]; then
                 ln -s /work/desenvolvimento ~/Desenvolvimento
+            fi
+
+            if [ ! -d ~/.m2 ]; then
+                ln -s /work/.m2 ~/.m2
             fi
         else
             tput setaf 1 && echo 'Diretório /work não existe. Fim da execução do script.'
