@@ -343,6 +343,7 @@ function configuraRepositorios(){
                 stable"
         # $(lsb_release -cs) \
         
+        curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
         sudo add-apt-repository ppa:papirus/papirus -y
         
         #sudo dpkg --add-architecture i386
@@ -538,6 +539,9 @@ function instalaDocker(){
 
 function instalaConfiguraUsoPessoal(){
     sudo apt install google-chrome-stable gnome-pie yakuake code -y
+
+    sudo apt autoremove nodejs
+    sudo apt install nodejs -y
 
     # Configura softwares para uso pessoal.
     cp ./autostart/* ~/.config/autostart
