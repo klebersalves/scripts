@@ -548,6 +548,7 @@ function instalaConfiguraUsoPessoal(){
     cp ./conf/pies.conf ~/.config/gnome-pie
     cp ./conf/yakuakerc ~/.config/yakuakerc
     cp ./conf/settings.json  ~/.config/Code/User
+    cp ./conf/keybindings.json  ~/.config/Code/User
 }
 
 function info(){        
